@@ -6,6 +6,8 @@ function _init()
 	wind_dir = "south"
 	player_points = {}
 	player_points[1] = 0
+	overall_player_speed = .5
+	water_drag = 1
 
 end
 
@@ -26,6 +28,8 @@ function init_player()
 	player = {}
 	player.x = 50
 	player.y = 50
+	player.dx = 0;
+	player.dy = 0;
 
 	-- north is 0, count clockwise
 	player.dir = 0
@@ -33,28 +37,46 @@ function init_player()
 end
 
 function move_player()
+	local wind_x, wind_y = wind_force_on_player()
+
+	player.dx += wind_x
+	player.dy += wind_y
+
+	-- Add water drag
+	player.dx -= abs(player.dx) * player.dx * water_drag
+	player.dy -= abs(player.dy) * player.dy * water_drag
+
+	player.x += player.dx * overall_player_speed
+	player.y += player.dy * overall_player_speed
+end
+-- TODO: use metatable to implement vectors and use those for velocity stuff
+
+function wind_force_on_player()
 	-- move player from the wind
 	-- hardcode to just south at first
+	dx = 0;
+	dy = 0;
 	if (player.dir == 0) then -- north, do nothing
 	elseif (player.dir == 1) then -- ne
-		player.x += 1
-		player.y -= 1
+		dx = 1
+		dy = -1
 	elseif (player.dir == 2) then -- east
-		player.x += 2
+		dx = 2
 	elseif (player.dir == 3) then -- se
-		player.x += 1
-		player.y += 1
+		dx = 1
+		dy = 1
 	elseif (player.dir == 4) then -- south
-		player.y += 1
+		dy = 1
 	elseif (player.dir == 5) then -- sw
-		player.x -= 1
-		player.y += 1
+		dx = -1
+		dy = 1
 	elseif (player.dir == 6) then -- west
-		player.x -= 2
+		dx = -2
 	else -- (player.dir == 7) -- nw
-		player.x -= 1
-		player.y -= 1
+		dx = -1
+		dy = -1
 	end
+	return dx, dy
 end
 
 function rotate_player()
