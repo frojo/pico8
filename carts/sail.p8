@@ -12,12 +12,15 @@ function _init()
 	points_to_win = 3
 	gameover = false
 
+	-- collisions
+	walls_spr_flag = 0
+	walls_map_offset = 16
+
 	player1 = init_player(1)
 	player2 = init_player(2)
 
 	-- knobs for Boat Feel (TM)
 	wind_dir = "south"
-	overall_player_speed = 1
 	water_drag = .075
 	wind_force = water_drag * 1.5
 
@@ -40,6 +43,11 @@ function _draw()
 		print("player "..tostr(winner.num).." wins!", 32, 64, winner.color)
 		print("(ctrl-r to restart)", 24, 72, winner.color)
 
+	end
+
+	-- debug
+	if in_wall_region(player1.x + player1.dx, player1.y, player1.w, player1.h) then
+		print(player1.num.." colliding with wall!")
 	end
 end
 
@@ -81,8 +89,12 @@ function move_player(player)
 
 	-- implement players colliding into each other here
 
-	player.x += player.dx * overall_player_speed
-	player.y += player.dy * overall_player_speed
+	-- if in_wall_region(player.x + player.dx, player.y, player.w, player.h) then
+	-- 	printh(player.num.." colliding with wall!")
+	-- end
+
+	player.x += player.dx 
+	player.y += player.dy
 end
 -- todo: use metatable to implement vectors and use those for velocity stuff
 -- so that we don't have to duplicate code everywhere?
@@ -151,6 +163,7 @@ function mark_race_progress(player)
 	-- check all the race things here and increment score if applicable
 
 	if in_race_region(player, race_region2_spr_flag) then
+	walls_map_offset = 16
 		if (player.hit_race_region0 and player.hit_race_region1) then
 			player.points += 1
 			player.hit_race_region0 = false
@@ -175,8 +188,35 @@ function in_race_region(player, race_region_spr_flag)
 	cellx = player.x / 8 + race_region_map_offset
 	celly = player.y / 8
 	return fget(mget(cellx, celly), race_region_spr_flag)
-	
 end
+
+-- check if rect given by args overlaps with a wall
+function in_wall_region(x, y, w, h)
+	print("wall_region x: "..x)
+	print("wall_region x+w: "..x+w)
+	print("wall_region y: "..y)
+	local cellx = x / 8 + walls_map_offset
+	print("wall_region cellx: "..cellx)
+	
+	for i=x,x+w do
+		for i=y,y+h do
+			local cellx = x / 8 + walls_map_offset
+			local celly = y / 8 + walls_map_offset
+			if (fget(mget(cellx, celly, walls_spr_flag))) return true
+		end
+	end
+
+	return false
+	-- check if player sprite overlaps with a "wall" sprite
+	-- min_cellx = player.x / 8 + walls_map_offset
+	-- max_cellx = (player.x + 8) / 8 + walls_map_offset
+	-- return fget(mget(min_cellx, min_celly), walls_spr_flag) or 
+	--        fget(mget(max_cellx, max_celly), walls_spr_flag)
+		
+end
+
+
+
 
 __gfx__
 00000000000400000500000000000000000400000047444000004000000570000000000000000000000000000000000000000000000000000000000000000000
