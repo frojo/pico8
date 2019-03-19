@@ -45,10 +45,9 @@ function _draw()
 
 	end
 
-	-- debug
-	if in_wall_region(player1.x + player1.dx, player1.y, player1.w, player1.h) then
-		print(player1.num.." colliding with wall!")
-	end
+	print("       cpu usage: "..tostr(stat(1)*100).."%")
+
+
 end
 
 function init_player(num)
@@ -89,12 +88,19 @@ function move_player(player)
 
 	-- implement players colliding into each other here
 
-	-- if in_wall_region(player.x + player.dx, player.y, player.w, player.h) then
-	-- 	printh(player.num.." colliding with wall!")
-	-- end
+	if in_wall_region(player.x + player.dx, player.y, player.w, player.h) or 
+		offscreen(player.x + player.dx, player.y, player.w, player.h) then
+		player.dx = -player.dx
+	else
+		player.x += player.dx
+	end
 
-	player.x += player.dx 
-	player.y += player.dy
+	if in_wall_region(player.x, player.y + player.dy, player.w, player.h) or
+		offscreen(player.x, player.y + player.dy, player.w, player.h) then
+		player.dy = -player.dy
+	else
+		player.y += player.dy
+	end
 end
 -- todo: use metatable to implement vectors and use those for velocity stuff
 -- so that we don't have to duplicate code everywhere?
@@ -190,29 +196,34 @@ function in_race_region(player, race_region_spr_flag)
 	return fget(mget(cellx, celly), race_region_spr_flag)
 end
 
+-- check if cell x,y (in map space) is a wall
+function in_wall(x, y)
+	return fget(mget(x, y), walls_spr_flag)
+end
+
+-- check if pixel at x, y is offscreen
+function offscreen(x, y, w, h)
+	return 
+		x + w < 0 or x < 0 or 
+		x > 128 or x + w > 128 or
+		y + h < 0 or y < 0 or 
+		y > 128 or y + h > 128
+end
+		 
+
 -- check if rect given by args overlaps with a wall
 function in_wall_region(x, y, w, h)
-	print("wall_region x: "..x)
-	print("wall_region x+w: "..x+w)
-	print("wall_region y: "..y)
-	local cellx = x / 8 + walls_map_offset
-	print("wall_region cellx: "..cellx)
-	
-	for i=x,x+w do
-		for i=y,y+h do
-			local cellx = x / 8 + walls_map_offset
-			local celly = y / 8 + walls_map_offset
-			if (fget(mget(cellx, celly, walls_spr_flag))) return true
-		end
-	end
 
-	return false
-	-- check if player sprite overlaps with a "wall" sprite
-	-- min_cellx = player.x / 8 + walls_map_offset
-	-- max_cellx = (player.x + 8) / 8 + walls_map_offset
-	-- return fget(mget(min_cellx, min_celly), walls_spr_flag) or 
-	--        fget(mget(max_cellx, max_celly), walls_spr_flag)
-		
+	local cellx_min = x / 8 + walls_map_offset
+	local cellx_max = (x + w) / 8 + walls_map_offset
+	local celly_min = y / 8 
+	local celly_max = (y + h) / 8 
+
+	return
+		in_wall(cellx_min, celly_min) or
+		in_wall(cellx_max, celly_min) or
+		in_wall(cellx_min, celly_max) or
+		in_wall(cellx_max, celly_max)
 end
 
 
