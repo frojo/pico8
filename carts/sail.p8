@@ -16,8 +16,9 @@ function _init()
 	walls_spr_flag = 0
 	walls_map_offset = 16
 
-	player1 = init_player(1)
-	player2 = init_player(2)
+	players = {}
+	add(players, init_player(1))
+	add(players, init_player(2))
 
 	-- knobs for Boat Feel (TM)
 	wind_dir = "south"
@@ -27,18 +28,19 @@ function _init()
 end
 
 function _update()
-	update_player(player1)
-	update_player(player2)
+	for player in all(players) do
+		update_player(player)
+	end
 end
 
 function _draw()
 	cls()
 	draw_water()
 	draw_marks()
-	draw_player(player1)
-	draw_player(player2)
-	draw_points(player1)
-	draw_points(player2)
+	for player in all(players) do
+		draw_player(player)
+		draw_points(player)
+	end
 	if (gameover) then
 		print("player "..tostr(winner.num).." wins!", 32, 64, winner.color)
 		print("(ctrl-r to restart)", 24, 72, winner.color)
@@ -89,7 +91,8 @@ function move_player(player)
 	-- implement players colliding into each other here
 
 	if in_wall_region(player.x + player.dx, player.y, player.w, player.h) or 
-		offscreen(player.x + player.dx, player.y, player.w, player.h) then
+		offscreen(player.x + player.dx, player.y, player.w, player.h) or
+		overlaps_player(player.x + player.dx, player.y, player.w, player.h) then
 		player.dx = -player.dx
 	else
 		player.x += player.dx
@@ -209,7 +212,31 @@ function offscreen(x, y, w, h)
 		y + h < 0 or y < 0 or 
 		y > 128 or y + h > 128
 end
-		 
+
+-- check if cell x,y (in map space) contains a player
+-- num_no_check is the num of a player to NOT check
+function in_player(x, y, num_no_check)
+	for player in all(players) do
+		if not num_no_check == player.num then
+			if x > player.x and x < player.x + player.w and
+				y > player.y and y < player.y + player.h then
+				return true
+			end
+		end
+	end
+	return false
+ 
+end
+
+-- check if rect given by args overlaps with a player
+function overlaps_player(x, y, w, h)
+	return
+		in_player(x, y) or
+		in_player(x + w, y) or
+		in_player(x, y + h) or
+		in_player(x + w, y + h)
+
+end
 
 -- check if rect given by args overlaps with a wall
 function in_wall_region(x, y, w, h)
