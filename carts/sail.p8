@@ -49,7 +49,7 @@ function _draw()
 
 	print("       cpu usage: "..tostr(stat(1)*100).."%")
 
-
+	local player = players[1]
 end
 
 function init_player(num)
@@ -91,18 +91,47 @@ function move_player(player)
 	-- implement players colliding into each other here
 
 	if in_wall_region(player.x + player.dx, player.y, player.w, player.h) or 
-		offscreen(player.x + player.dx, player.y, player.w, player.h) or
-		overlaps_player(player.x + player.dx, player.y, player.w, player.h) then
+		offscreen(player.x + player.dx, player.y, player.w, player.h) then
 		player.dx = -player.dx
 	else
-		player.x += player.dx
+		local overlapping_player = nil
+		for other_player in all(players) do
+			if overlaps_player(player.x + player.dx, player.y, player.w, player.h, other_player) then
+				overlapping_player = other_player
+				break
+			end
+		end
+
+		if overlapping_player then
+			tmpdx = player.dx
+			player.dx = overlapping_player.dx
+			overlapping_player.dx = tmpdx
+
+		else 
+			player.x += player.dx
+		end
 	end
 
 	if in_wall_region(player.x, player.y + player.dy, player.w, player.h) or
 		offscreen(player.x, player.y + player.dy, player.w, player.h) then
 		player.dy = -player.dy
 	else
-		player.y += player.dy
+		local overlapping_player = nil
+		for other_player in all(players) do
+			if overlaps_player(player.x, player.y + player.dy, player.w, player.h, other_player) then
+				overlapping_player = other_player
+				break
+			end
+		end
+
+		if overlapping_player then
+			tmpdy = player.dy
+			player.dy = overlapping_player.dy
+			overlapping_player.dy = tmpdy
+
+		else 
+			player.y += player.dy
+		end
 	end
 end
 -- todo: use metatable to implement vectors and use those for velocity stuff
@@ -213,28 +242,20 @@ function offscreen(x, y, w, h)
 		y > 128 or y + h > 128
 end
 
--- check if cell x,y (in map space) contains a player
--- num_no_check is the num of a player to NOT check
-function in_player(x, y, num_no_check)
-	for player in all(players) do
-		if not num_no_check == player.num then
-			if x > player.x and x < player.x + player.w and
-				y > player.y and y < player.y + player.h then
-				return true
-			end
-		end
-	end
-	return false
- 
+-- check if point at (x, y) is in player
+function in_player(x, y, player)
+	return x > player.x and x < player.x + player.w and
+		y > player.y and y < player.y + player.h
 end
 
 -- check if rect given by args overlaps with a player
-function overlaps_player(x, y, w, h)
+-- only works for rects that are <= player size
+function overlaps_player(x, y, w, h, player)
 	return
-		in_player(x, y) or
-		in_player(x + w, y) or
-		in_player(x, y + h) or
-		in_player(x + w, y + h)
+		in_player(x, y, player) or
+		in_player(x + w, y, player) or
+		in_player(x, y + h, player) or
+		in_player(x + w, y + h, player)
 
 end
 
