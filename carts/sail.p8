@@ -32,6 +32,11 @@ function _init()
 	wind_lines = {}
 	wind_line_speed = wind_force * 100
 
+	-- wind lines try 2
+	wlines = {}
+	wline_speed = 4
+	wline_freq = 3
+
 	-- number of frames
 	t = 0
 
@@ -42,6 +47,7 @@ function _update()
 		update_player(player)
 	end
 	update_wind_lines()
+	update_wlines()
 
 	t += 1
 end
@@ -55,7 +61,8 @@ function _draw()
 		draw_points(player)
 	end
 
-	draw_wind_lines()
+	-- draw_wind_lines()
+	draw_wlines()
 
 	if (gameover) then
 		print("player "..tostr(winner.num).." wins!", 32, 64, winner.color)
@@ -67,9 +74,6 @@ function _draw()
 
 	if debug then
 		print("       cpu usage: "..tostr(stat(1)*100).."%")
-		print("       hit = "..tostr(hit_debug))
-		print("       x = "..tostr(x))
-		print("       lastx = "..tostr(lastx))
 	end
 
 end
@@ -299,19 +303,64 @@ end
 function init_wind_line(x, y)
 	local wline = {}
 	wline.x = x
-	wline.length = wind_line_speed 
+	wline.length = wind_line_speed - 2 + rnd(20)
 	wline.y = 0 - (y + wline.length  / 2)
 	return wline
+end
+
+-- initialize a new animated wind line
+function init_wline(x, y, max_len)
+	local wline = {}
+	wline.x = x
+	wline.y = y
+	wline.len = 0
+	wline.max_len = max_len
+	wline.hit_max_len = false
+
+	return wline
+end
+
+function update_wlines()
+	-- generate new wind lines
+
+	if rnd(20 / wline_freq) < 1 then
+		add(wlines, init_wline(rnd(128), rnd(128), 10 + rnd(30)))
+	end
+
+
+	-- animate already-present wind lines
+	for wline in all(wlines) do
+		-- stretch until it's reached the max length and then shrink
+		-- until it's gone forever
+		if not wline.hit_max_len then
+			wline.len += wline_speed
+		else
+			wline.y += wline_speed
+			wline.len -= wline_speed
+		end
+		if wline.len >= wline.max_len then
+			wline.hit_max_len = true
+		elseif wline.len < 0 then
+			del(wlines, wline)
+		end
+
+	end
+end
+
+function draw_wlines()
+	for wline in all(wlines) do
+		line(wline.x, wline.y, wline.x, wline.y + wline.len, 7)
+	end
 end
 
 function update_wind_lines()
 	--hardcoded to southward wind
 
 	-- generate new wind lines
-	x = rnd(128)
-	lastx = x
-	if (t % 4 == 0) then
-		local num_new_lines = 1 + rnd(3)
+	local x = rnd(128)
+	local lastx = x
+	if (t % 1 == 0) then
+		local num_new_lines = 0 + rnd(1)
 		for i = 0, num_new_lines do
 			-- make sure 2 wind lines aren't too close together
 			repeat
