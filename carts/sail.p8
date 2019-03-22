@@ -35,7 +35,12 @@ function _init()
 	-- wind lines try 2
 	wlines = {}
 	wline_speed = 4
-	wline_freq = 3
+	wline_freq = 1
+
+	waves = {}
+	wave_move_speed = wline_speed / 10
+	wave_grow_speed = wave_move_speed
+	wave_freq = 2
 
 	-- number of frames
 	t = 0
@@ -48,6 +53,7 @@ function _update()
 	end
 	update_wind_lines()
 	update_wlines()
+	update_waves()
 
 	t += 1
 end
@@ -56,6 +62,7 @@ function _draw()
 	cls()
 	draw_water()
 	draw_marks()
+	draw_waves()
 	for player in all(players) do
 		draw_player(player)
 		draw_points(player)
@@ -321,8 +328,9 @@ function init_wline(x, y, max_len)
 end
 
 function update_wlines()
-	-- generate new wind lines
+	-- hardcoded southward wind
 
+	-- generate new wind lines
 	if rnd(20 / wline_freq) < 1 then
 		add(wlines, init_wline(rnd(128), rnd(128), 10 + rnd(30)))
 	end
@@ -389,6 +397,52 @@ function draw_wind_lines()
 			wind_line.x, wind_line.y + wind_line.length, 7)
 	end
 
+end
+
+function init_wave(x, y, max_len)
+	wave = {}
+	wave.x = x
+	wave.y = y
+	wave.len = 0
+	wave.max_len = max_len
+	wave.hit_max_len = false
+
+	return wave
+end
+
+function update_waves()
+	-- hardcoded southward wind
+
+	-- generate new wind lines
+	if rnd(20 / wave_freq) < 1 then
+		add(waves, init_wline(rnd(128), rnd(128), 5 + rnd(10)))
+	end
+
+	for wave in all(waves) do
+		wave.y += wave_move_speed
+
+		-- stretch until it's reached the max length and then shrink
+		-- until it's gone forever
+		if not wave.hit_max_len then
+			wave.len += wave_grow_speed
+		else
+			wave.len -= wave_grow_speed
+		end
+		if wave.len >= wave.max_len then
+			wave.hit_max_len = true
+		elseif wave.len < 0 then
+			del(waves, wave)
+		end
+	end
+end
+
+function draw_waves()
+	for wave in all(waves) do
+		line(wave.x, wave.y, 
+		wave.x + wave.len, wave.y + wave.len / 4, 7)
+		line(wave.x, wave.y, 
+		wave.x - wave.len, wave.y + wave.len / 4, 7)
+	end
 end
 
 __gfx__
