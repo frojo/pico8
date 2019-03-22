@@ -26,12 +26,17 @@ function _init()
 	water_drag = .075
 	wind_force = water_drag * 1.5
 
+	-- wind lines
+	wind_lines = {}
+	init_wind_lines()
+
 end
 
 function _update()
 	for player in all(players) do
 		update_player(player)
 	end
+	update_wind_lines()
 end
 
 function _draw()
@@ -42,15 +47,19 @@ function _draw()
 		draw_player(player)
 		draw_points(player)
 	end
+
+	draw_wind_lines()
+
 	if (gameover) then
 		print("player "..tostr(winner.num).." wins!", 32, 64, winner.color)
 		print("(ctrl-r to restart)", 24, 72, winner.color)
 
 	end
 
+
+
 	print("       cpu usage: "..tostr(stat(1)*100).."%")
 
-	local player = players[1]
 end
 
 function init_player(num)
@@ -275,8 +284,28 @@ function in_wall_region(x, y, w, h)
 		in_wall(cellx_max, celly_max)
 end
 
+function init_wind_lines()
+	local line1 = {}
+	line1.x1 = 42
+	line1.y1 = 42
+	line1.x2 = 69
+	line1.y2 = 69
+	add(wind_lines, line1)
+end
+
+function update_wind_lines()
+	--hardcode to southward wind
 
 
+end
+
+function draw_wind_lines()
+	for wind_line in all(wind_lines) do
+		line(wind_line.x1, wind_line.y1,
+			wind_line.x2, wind_line.y2, 7)
+	end
+
+end
 
 __gfx__
 00000000000400000500000000000000000400000047444000004000000570000000000000000000000000000000000000000000000000000000000000000000
