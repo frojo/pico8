@@ -20,8 +20,9 @@ function _init()
 	add(players, init_player(1))
 	add(players, init_player(2))
 
-	-- knobs for Boat Feel (TM)
 	wind_dir = "south"
+
+	-- knobs for Boat Feel (TM)
 	water_drag = .075
 	wind_force = water_drag * 1.5
 
