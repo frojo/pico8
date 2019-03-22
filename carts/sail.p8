@@ -4,6 +4,8 @@ __lua__
 
 
 function _init()
+	debug = true
+
 	-- bookkeeping vars for racing
 	race_region0_spr_flag = 1
 	race_region1_spr_flag = 2
@@ -28,7 +30,10 @@ function _init()
 
 	-- wind lines
 	wind_lines = {}
-	init_wind_lines()
+	wind_line_speed = wind_force * 100
+
+	-- number of frames
+	t = 0
 
 end
 
@@ -37,6 +42,8 @@ function _update()
 		update_player(player)
 	end
 	update_wind_lines()
+
+	t += 1
 end
 
 function _draw()
@@ -58,7 +65,12 @@ function _draw()
 
 
 
-	print("       cpu usage: "..tostr(stat(1)*100).."%")
+	if debug then
+		print("       cpu usage: "..tostr(stat(1)*100).."%")
+		print("       hit = "..tostr(hit_debug))
+		print("       x = "..tostr(x))
+		print("       lastx = "..tostr(lastx))
+	end
 
 end
 
@@ -284,25 +296,48 @@ function in_wall_region(x, y, w, h)
 		in_wall(cellx_max, celly_max)
 end
 
-function init_wind_lines()
-	local line1 = {}
-	line1.x1 = 42
-	line1.y1 = 42
-	line1.x2 = 69
-	line1.y2 = 69
-	add(wind_lines, line1)
+function init_wind_line(x, y)
+	local wline = {}
+	wline.x = x
+	wline.length = wind_line_speed 
+	wline.y = 0 - (y + wline.length  / 2)
+	return wline
 end
 
 function update_wind_lines()
-	--hardcode to southward wind
+	--hardcoded to southward wind
 
+	-- generate new wind lines
+	x = rnd(128)
+	lastx = x
+	if (t % 4 == 0) then
+		local num_new_lines = 1 + rnd(3)
+		for i = 0, num_new_lines do
+			-- make sure 2 wind lines aren't too close together
+			repeat
+				hit_debug = true
+				x = rnd(128)
+			until (abs(x - lastx) > 16)
+			add(wind_lines, init_wind_line(x, rnd(10)))
+			lastx = x
+		end
+	end
 
+	-- move the wind lines already on screen
+	for wind_line in all(wind_lines) do
+		-- remove offscreen wind lines
+		if (wind_line.y - wind_line.length / 2  > 128) then
+			del(wind_lines, wind_line)
+		else 
+			wind_line.y += wind_line_speed 
+		end
+	end
 end
 
 function draw_wind_lines()
 	for wind_line in all(wind_lines) do
-		line(wind_line.x1, wind_line.y1,
-			wind_line.x2, wind_line.y2, 7)
+		line(wind_line.x, wind_line.y,
+			wind_line.x, wind_line.y + wind_line.length, 7)
 	end
 
 end
