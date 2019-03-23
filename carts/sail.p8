@@ -28,10 +28,6 @@ function _init()
 	water_drag = .075
 	wind_force = water_drag * 1.5
 
-	-- wind lines
-	wind_lines = {}
-	wind_line_speed = wind_force * 100
-
 	-- wind lines try 2
 	wlines = {}
 	wline_speed = 2
@@ -51,7 +47,6 @@ function _update()
 	for player in all(players) do
 		update_player(player)
 	end
-	update_wind_lines()
 	update_wlines()
 	update_waves()
 
@@ -68,7 +63,6 @@ function _draw()
 		draw_points(player)
 	end
 
-	-- draw_wind_lines()
 	draw_wlines()
 
 	if (gameover) then
@@ -307,14 +301,6 @@ function in_wall_region(x, y, w, h)
 		in_wall(cellx_max, celly_max)
 end
 
-function init_wind_line(x, y)
-	local wline = {}
-	wline.x = x
-	wline.length = wind_line_speed - 2 + rnd(20)
-	wline.y = 0 - (y + wline.length  / 2)
-	return wline
-end
-
 -- initialize a new animated wind line
 function init_wline(x, y, max_len)
 	local wline = {}
@@ -359,44 +345,6 @@ function draw_wlines()
 	for wline in all(wlines) do
 		line(wline.x, wline.y, wline.x, wline.y + wline.len, 7)
 	end
-end
-
-function update_wind_lines()
-	--hardcoded to southward wind
-
-	-- generate new wind lines
-	local x = rnd(128)
-	local lastx = x
-	if (t % 1 == 0) then
-		local num_new_lines = 0 + rnd(1)
-		for i = 0, num_new_lines do
-			-- make sure 2 wind lines aren't too close together
-			repeat
-				hit_debug = true
-				x = rnd(128)
-			until (abs(x - lastx) > 16)
-			add(wind_lines, init_wind_line(x, rnd(10)))
-			lastx = x
-		end
-	end
-
-	-- move the wind lines already on screen
-	for wind_line in all(wind_lines) do
-		-- remove offscreen wind lines
-		if (wind_line.y - wind_line.length / 2  > 128) then
-			del(wind_lines, wind_line)
-		else 
-			wind_line.y += wind_line_speed 
-		end
-	end
-end
-
-function draw_wind_lines()
-	for wind_line in all(wind_lines) do
-		line(wind_line.x, wind_line.y,
-			wind_line.x, wind_line.y + wind_line.length, 7)
-	end
-
 end
 
 function init_wave(x, y, max_len)
