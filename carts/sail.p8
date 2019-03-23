@@ -4,7 +4,7 @@ __lua__
 
 
 function _init()
-	debug = true
+	debug = false
 
 	-- bookkeeping vars for racing
 	race_region0_spr_flag = 1
@@ -68,9 +68,15 @@ function _draw()
 	if (gameover) then
 		print("player "..tostr(winner.num).." wins!", 32, 64, winner.color)
 		print("(ctrl-r to restart)", 24, 72, winner.color)
-
 	end
+	if t < 300 then -- show for 10 seconds
+		print("use left and right", 32, 40, 0)
+		print("to turn your boat", 32, 48, 0)
 
+		print("go counterclockwise", 32, 64, 0)
+		print("around the red buoys", 32, 72, 0)
+		print("3 times to win!", 32, 80, 0)
+	end 
 
 
 	if debug then
