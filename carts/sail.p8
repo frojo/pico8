@@ -74,6 +74,7 @@ function _draw()
 
 
 	if debug then
+
 		print("       cpu usage: "..tostr(stat(1)*100).."%")
 	end
 
@@ -100,12 +101,20 @@ function init_player(num)
 	-- north is 0, count clockwise
 	player.dir = 0
 
+	player.alt_ctl = false
+
 	return player
 end
 
 function update_player(player)
 	rotate_player(player)
 	move_player(player)
+
+	-- toggle control scheme
+	if (btnp(4, player.num - 1)) then
+		player.alt_ctl = not player.alt_ctl
+	end
+
 	if (not gameover) mark_race_progress(player)
 end
 
@@ -193,13 +202,23 @@ function wind_force_on_player(player)
 end
 
 function rotate_player(player)
-	if (player.num == 1) then
-		if (btnp(0)) player.dir = (player.dir - 1) % 8
-		if (btnp(1)) player.dir = (player.dir + 1) % 8
-	end
-	if (player.num == 2) then
-		if (btnp(4)) player.dir = (player.dir - 1) % 8
-		if (btnp(5)) player.dir = (player.dir + 1) % 8
+	-- correct for pico8 btn interface (which is 0-based)
+	local pnum = player.num - 1
+	-- 0 = left, 1 = right, 2 = up, 3 = down
+	
+	if (player.alt_ctl) then
+		if (btn(0, pnum) and btn(2, pnum)) then  player.dir = 7
+		elseif (btn(2, pnum) and btn(1, pnum)) then player.dir = 1
+		elseif (btn(1, pnum) and btn(3, pnum)) then player.dir = 3
+		elseif (btn(3, pnum) and btn(0, pnum)) then player.dir = 5
+		elseif (btn(0, pnum)) then player.dir = 6
+		elseif (btn(1, pnum)) then player.dir = 2
+		elseif (btn(2, pnum)) then player.dir = 0
+		elseif (btn(3, pnum)) then player.dir = 4
+		end
+	else
+		if (btnp(0, pnum)) player.dir = (player.dir - 1) % 8
+		if (btnp(1, pnum)) player.dir = (player.dir + 1) % 8
 	end
 end
 
