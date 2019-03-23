@@ -34,7 +34,7 @@ function _init()
 
 	-- wind lines try 2
 	wlines = {}
-	wline_speed = 4
+	wline_speed = 2
 	wline_freq = 1
 
 	waves = {}
@@ -61,8 +61,8 @@ end
 function _draw()
 	cls()
 	draw_water()
-	draw_marks()
 	draw_waves()
+	draw_marks()
 	for player in all(players) do
 		draw_player(player)
 		draw_points(player)
