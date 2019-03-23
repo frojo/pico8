@@ -115,8 +115,7 @@ function move_player(player)
 	player.dx += wind_x * wind_force - player.dx * water_drag
 	player.dy += wind_y * wind_force - player.dy * water_drag
 
-	-- implement players colliding into each other here
-
+	-- handle collisions in x direction
 	if in_wall_region(player.x + player.dx, player.y, player.w, player.h) or 
 		offscreen(player.x + player.dx, player.y, player.w, player.h) then
 		player.dx = -player.dx
@@ -139,6 +138,7 @@ function move_player(player)
 		end
 	end
 
+	-- handle collisions in y direction
 	if in_wall_region(player.x, player.y + player.dy, player.w, player.h) or
 		offscreen(player.x, player.y + player.dy, player.w, player.h) then
 		player.dy = -player.dy
