@@ -14,6 +14,15 @@ function _init()
 	walls_spr_flag = 0
 	walls_map_offset = 16
 
+-- sprite flag notes
+-- blue means water 
+-- green means land
+-- red means die-on-touch
+	-- sprite flags
+	water_sf = 4 -- blue
+	land_sf = 3 -- green
+	rocks_sf = 0 -- red
+
 	players = {}
 	add(players, init_player(1))
 
@@ -66,7 +75,10 @@ function _draw()
 	if debug then
 		print("               cpu: "..tostr(stat(1)*100).."%")
 		-- print("               sprite idx: "..tostr(curr_sprite_idx))
-		-- print("               player state: "..tostr(players[1].state))
+		print("               player state: "..tostr(players[1].state))
+		print("               in water: "..tostr(in_water))
+		-- print("               cellx: "..tostr(cellx))
+		-- print("               celly: "..tostr(celly))
 		-- print("               player x: "..tostr(players[1].x))
 		-- print("               player y: "..tostr(players[1].y))
 		-- print("               tried move?: "..tostr(tried_to_move))
@@ -99,16 +111,37 @@ function init_player(num)
 	return player
 end
 
+
+-- converts from world coords to map cell
+function world_to_map_cell(x, y)
+	return x / 8, y / 8
+end
+
 function update_player(player)
+	-- check if swimming or standing
+	-- todo
+	if player.state == 0 or player.state == 1 then
+		local cellx, celly = world_to_map_cell(player.x, player.y)
+		-- check if in water
+		if fget(mget(cellx, celly), water_sf) then
+			in_water = true
+			player.state = 1
+		else
+			in_water = false
+			player.state = 0
+		end
+	end
+	
+
 	rotate_player(player)
 	move_player(player)
 end
 
 function move_player(player)
-	-- pedestrian controls/movement
 	-- different indexing conventions are fun
 	local pnum = player.num - 1
-	if player.state == 0 then
+
+	if player.state == 0 or player.state == 1 then
 		-- TODO lol
 		player.dx = 0
 		player.dy = 0
@@ -300,9 +333,39 @@ function draw_player_pedestrian(player)
 
 end
 
+function draw_player_swimming(player)
+	-- player sprite is drawn on lblue bg 
+	palt(0, false)
+	palt(12, true)
+	-- idle animation
+	if player.dx == 0 and player.dy == 0 then
+		if (t % 90) < 45 then
+			spr(36, player.x, player.y)
+		else 
+			spr(36, player.x, player.y)
+		end
+
+	-- walking animation
+	-- todo: replace other animations logic with this way of doing it
+	else
+		
+		local flipx = player.dx < 0
+		local frames_per_sprite = 4
+		local sprite_indices = {34, 35}
+		local num_sprites = #sprite_indices
+		local curr_sprite_idx = (t % (frames_per_sprite * num_sprites)) / frames_per_sprite
+		spr(sprite_indices[flr(curr_sprite_idx)+1], player.x, player.y, 1, 1, flipx)
+	end
+	-- reset palette
+	palt()
+end
+
+
 function draw_player(player)
 	if player.state == 0 then
 		draw_player_pedestrian(player)
+	elseif player.state == 1 then
+		draw_player_swimming(player)
 	-- player is sailing
 	elseif player.state == 3 then
 		-- the boat sprites just happen to be in the beginning of
@@ -392,24 +455,24 @@ __gfx__
 1111111155555555afafafaf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1111111155555555fafafafa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1111111155555555afafafaf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc0000cccccccccccc0000cccc0000cccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc5444cccc0000cccc5444cccc5444cccccccccccccccccc4444444ccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc4040cccc5444cccc4040cccc4040cccccccccccccccccc45555554cccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc4444cccc4040cccc4444cccc4444cccccccccccccccccc4ffffff4cccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc7777cccc4444cccc7777cccc7777cccccccccccccccccc44444444cccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc2222cccc7777cccc22220cc02222cccccccccccccccccc4444444ccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc0cc0cccc0cc0cccc0cccccccccc0cccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cccccccccccccccccccccccccccccccccccccccccccccccccc0000cccccccccccc0000cccccccccccc0000cc0000000000000000000000000000000000000000
-cccccccccccccccccccccccccccccccccccccccccccccccccc4445cccccccccccc4445cccccccccccc4445cc0000000000000000000000000000000000000000
-cccccccccccccccccccccccccccccccccccccccccccccccccc0404cccccccccccc0404cccccccccccc0404cc0000000000000000000000000000000000000000
-cccccccccccccccccccccccccccccccc5555555cccccccccc544445ccccccccccc4444cccccccccccc4444cc0000000000000000000000000000000000000000
-5555555ccccccccc5555555ccccccccc50000005cccccccc50777705cccccccc5577775ccccccccc5577775c0000000000000000000000000000000000000000
-50000005cccccccc5ffffff5cccccccc5ffffff5cccccccc5f2222f5cccccccc50222205cccccccc5f2222f50000000000000000000000000000000000000000
-55555555cccccccc55555555cccccccc55555555cccccccc55555555cccccccc55555555cccccccc555555550000000000000000000000000000000000000000
-5555555ccccccccc5555555ccccccccc5555555ccccccccc5555555ccccccccc5555555ccccccccc5555555c0000000000000000000000000000000000000000
+cccccccccccccccccccccccccccccccc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc0000cccccccccccc0000cccc0000cc1100001111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc5444cccc0000cccc5444cccc5444cc1154441111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc4040cccc5444cccc4040cccc4040cc1140401111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc4444cccc4040cccc4444cccc4444cc1144441111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc7777cccc4444cccc7777cccc7777cc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc2222cccc7777cccc22220cc02222cc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc0cc0cccc0cc0cccc0cccccccccc0cc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cccccccccccccccccccccccccccccccccc0000cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cccccccccccccccccccccccccccccccccc4445cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cccccccccccccccccccccccccccccccccc0404cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cccccccccccccccccccccccccccccccccc4444cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+5555555ccccccccccccccccccccccccc5577775ccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+50000005cccccccccccccccccccccccc50222205cccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+55555555cccccccccccccccccccccccc55555555cccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+5555555ccccccccccccccccccccccccc5555555ccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
 __gff__
-0000000000000004080108000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000004080108000000000010010800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 1111111111111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
