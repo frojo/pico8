@@ -77,6 +77,7 @@ function _draw()
 		-- print("               sprite idx: "..tostr(curr_sprite_idx))
 		print("               player state: "..tostr(players[1].state))
 		print("               pressed x: "..tostr(pressed_x))
+		print("               dist: "..tostr(dists))
 		-- print("               cellx: "..tostr(cellx))
 		-- print("               celly: "..tostr(celly))
 		-- print("               player x: "..tostr(players[1].x))
@@ -118,6 +119,12 @@ function world_to_map_cell(x, y)
 	return x / 8, y / 8
 end
 
+function dist(x1, y1, x2, y2)
+	local dx = x2 - x1
+	local dy = y2 - y1
+	return sqrt(dx*dx + dy*dy)
+end
+
 function update_player(player)
 	-- if swimming or standing
 	if player.state == 0 or player.state == 1 then
@@ -137,11 +144,13 @@ function update_player(player)
 		if btnp(5, pnum) then
 			pressed_x = true
 			-- todo: check that is close enough to rowboat
-			player.x = boat.x
-			player.y = boat.y
-			player.state = 2
-			boat.hidden = true
-			-- i like the idea of momentum carrying over
+			if dist(player.x, player.y, boat.x, boat.y) < 8 then
+				player.x = boat.x
+				player.y = boat.y
+				player.state = 2
+				boat.hidden = true
+				-- i like the idea of momentum carrying over
+			end
 		end
 	end
 
