@@ -69,14 +69,14 @@ function _draw()
 		draw_player(player)
 	end
 
-	draw_rowboat(boat)
+	if (not boat.hidden) draw_rowboat(boat)
 
 
 	if debug then
 		print("               cpu: "..tostr(stat(1)*100).."%")
 		-- print("               sprite idx: "..tostr(curr_sprite_idx))
 		print("               player state: "..tostr(players[1].state))
-		print("               in water: "..tostr(in_water))
+		print("               pressed x: "..tostr(pressed_x))
 		-- print("               cellx: "..tostr(cellx))
 		-- print("               celly: "..tostr(celly))
 		-- print("               player x: "..tostr(players[1].x))
@@ -90,7 +90,7 @@ function init_player(num)
 	local player = {}
 	player.num = num
 
-	-- 0 = pedestrian, 1 = swimming, 2 = rowing, 3 = sailing
+	-- player states: 0 = pedestrian, 1 = swimming, 2 = rowing, 3 = sailing
 	player.state = 0
 	
 	if (num == 1) player.color = 4 -- brown
@@ -128,17 +128,27 @@ function update_player(player)
 		-- check if in water
 		local cellx, celly = world_to_map_cell(player.x, player.y)
 		if fget(mget(cellx, celly), water_sf) then
-			in_water = true
 			player.state = 1
 		else
-			in_water = false
 			player.state = 0
 		end
+
+		-- pressing x let's the player hop into the boat
+		if btnp(5, pnum) then
+			pressed_x = true
+			-- todo: check that is close enough to rowboat
+			player.x = boat.x
+			player.y = boat.y
+			player.state = 2
+			boat.hidden = true
+			-- i like the idea of momentum carrying over
+		end
 	end
-	
+
 
 	rotate_player(player)
 	move_player(player)
+
 end
 
 function move_player(player)
@@ -309,6 +319,7 @@ function rotate_player(player)
 	end
 end
 
+
 function draw_player_pedestrian(player)
 	-- player sprite is drawn on lblue bg 
 	palt(0, false)
@@ -324,7 +335,6 @@ function draw_player_pedestrian(player)
 	-- walking animation
 	-- todo: replace other animations logic with this way of doing it
 	else
-		
 		local frames_per_sprite = 4
 		local sprite_indices = {34, 35}
 		local num_sprites = #sprite_indices
@@ -344,12 +354,21 @@ function draw_player_swimming(player)
 	palt()
 end
 
+function draw_player_rowing(player)
+	-- player swim sprite is drawn on lblue bg 
+	palt(0, false)
+	palt(12, true)
+	spr(52, player.x, player.y, 1, 1, not player.facing_right)
+	palt()
+end
 
 function draw_player(player)
 	if player.state == 0 then
 		draw_player_pedestrian(player)
 	elseif player.state == 1 then
 		draw_player_swimming(player)
+	elseif player.state == 2 then
+		draw_player_rowing(player)
 	-- player is sailing
 	elseif player.state == 3 then
 		-- the boat sprites just happen to be in the beginning of
@@ -411,6 +430,8 @@ function init_rowboat(x, y)
 	boat = {}
 	boat.x = x
 	boat.y = y
+	-- for when player is in boat so we don't want to draw it
+	boat.hidden = false
 	return boat
 end
 
