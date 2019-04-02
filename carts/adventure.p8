@@ -31,7 +31,7 @@ function _init()
 
 	walk_speed = .8
 
-	-- knobs for Boat Feel (TM)
+	-- knobs for boat feel (tm)
 	water_drag = .01
 	wind_force = water_drag * 1.5
 	row_force = water_drag * 50
@@ -142,7 +142,7 @@ function move_player(player)
 	local pnum = player.num - 1
 
 	if player.state == 0 or player.state == 1 then
-		-- TODO lol
+		-- todo lol
 		player.dx = 0
 		player.dy = 0
 		if btn(0, pnum) then 
@@ -162,7 +162,7 @@ function move_player(player)
 		return
 	end
 
-	-- TODO clean this shit up
+	-- todo clean this shit up
 	-- add wind force
 	local forcex, forcey
 	if (windy) then
@@ -334,29 +334,11 @@ function draw_player_pedestrian(player)
 end
 
 function draw_player_swimming(player)
-	-- player sprite is drawn on lblue bg 
+	-- player swim sprite is drawn on lblue bg 
 	palt(0, false)
 	palt(12, true)
-	-- idle animation
-	if player.dx == 0 and player.dy == 0 then
-		if (t % 60) < 20 then
-			spr(36, player.x, player.y)
-		else 
-			spr(37, player.x, player.y)
-		end
-
-	-- walking animation
-	-- todo: replace other animations logic with this way of doing it
-	else
-		
-		local flipx = player.dx < 0
-		local frames_per_sprite = 4
-		local sprite_indices = {34, 35}
-		local num_sprites = #sprite_indices
-		local curr_sprite_idx = (t % (frames_per_sprite * num_sprites)) / frames_per_sprite
-		spr(sprite_indices[flr(curr_sprite_idx)+1], player.x, player.y, 1, 1, flipx)
-	end
-	-- reset palette
+	local flipx = player.dx < 0
+	spr(36, player.x, player.y, 1, 1, flipx)
 	palt()
 end
 
@@ -455,14 +437,14 @@ __gfx__
 1111111155555555afafafaf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1111111155555555fafafafa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 1111111155555555afafafaf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-cccccccccccccccccccccccccccccccc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc0000cccccccccccc0000cccc0000cc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc5444cccc0000cccc5444cccc5444cc1100001111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc4040cccc5444cccc4040cccc4040cc1154441111000011cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc4444cccc4040cccc4444cccc4444cc1140401111544411cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc7777cccc4444cccc7777cccc7777cc1144441111404011cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc2222cccc7777cccc22220cc02222cc1177771111444411cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-cc0cc0cccc0cc0cccc0cccccccccc0cc1111111111111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc0000cccccccccccc0000cccc0000cccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc5444cccc0000cccc5444cccc5444cccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc4040cccc5444cccc4040cccc4040cccc0000cccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc4444cccc4040cccc4444cccc4444cccc5444cccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc7777cccc4444cccc7777cccc7777cccc4040cccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc2222cccc7777cccc22220cc02222cccc4444cccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+cc0cc0cccc0cc0cccc0cccccccccc0cccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
 cccccccccccccccccccccccccccccccccc0000cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
 cccccccccccccccccccccccccccccccccc4445cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
 cccccccccccccccccccccccccccccccccc0404cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
