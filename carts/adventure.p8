@@ -102,6 +102,7 @@ function init_player(num)
 	player.w = 8
 	player.dx = 0;
 	player.dy = 0;
+	player.facing_right = true
 
 	-- north is 0, count clockwise
 	player.dir = 0
@@ -118,11 +119,14 @@ function world_to_map_cell(x, y)
 end
 
 function update_player(player)
-	-- check if swimming or standing
-	-- todo
+	-- if swimming or standing
 	if player.state == 0 or player.state == 1 then
-		local cellx, celly = world_to_map_cell(player.x, player.y)
+		if player.dx > 0 then player.facing_right = true
+		elseif player.dx < 0 then player.facing_right = false
+		end
+
 		-- check if in water
+		local cellx, celly = world_to_map_cell(player.x, player.y)
 		if fget(mget(cellx, celly), water_sf) then
 			in_water = true
 			player.state = 1
@@ -312,21 +316,20 @@ function draw_player_pedestrian(player)
 	-- idle animation
 	if player.dx == 0 and player.dy == 0 then
 		if (t % 90) < 45 then
-			spr(32, player.x, player.y)
+			spr(32, player.x, player.y, 1, 1, not player.facing_right)
 		else 
-			spr(33, player.x, player.y)
+			spr(33, player.x, player.y, 1, 1, not player.facing_right)
 		end
 
 	-- walking animation
 	-- todo: replace other animations logic with this way of doing it
 	else
 		
-		local flipx = player.dx < 0
 		local frames_per_sprite = 4
 		local sprite_indices = {34, 35}
 		local num_sprites = #sprite_indices
 		local curr_sprite_idx = (t % (frames_per_sprite * num_sprites)) / frames_per_sprite
-		spr(sprite_indices[flr(curr_sprite_idx)+1], player.x, player.y, 1, 1, flipx)
+		spr(sprite_indices[flr(curr_sprite_idx)+1], player.x, player.y, 1, 1, not player.facing_right)
 	end
 	-- reset palette
 	palt()
@@ -337,8 +340,7 @@ function draw_player_swimming(player)
 	-- player swim sprite is drawn on lblue bg 
 	palt(0, false)
 	palt(12, true)
-	local flipx = player.dx < 0
-	spr(36, player.x, player.y, 1, 1, flipx)
+	spr(36, player.x, player.y, 1, 1, not player.facing_right)
 	palt()
 end
 
