@@ -162,7 +162,7 @@ function update_player_pedestrian(player)
 		player.y += player.dy * walk_speed
 
 		-- pressing c let's the player hop into the boat
-		if btnp(6, pnum) then
+		if btnp(4, pnum) then
 			if dist(player.x, player.y, boat.x, boat.y) < 8 then
 				player.x = boat.x
 				player.y = boat.y
