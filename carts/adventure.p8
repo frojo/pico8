@@ -76,11 +76,15 @@ function _draw()
 		print("               cpu: "..tostr(stat(1)*100).."%")
 		-- print("               sprite idx: "..tostr(curr_sprite_idx))
 		print("               player state: "..tostr(players[1].state))
+		print("               player dir: "..tostr(players[1].dir))
 		-- print("               cellx: "..tostr(cellx))
 		-- print("               celly: "..tostr(celly))
 		-- print("               player x: "..tostr(players[1].x))
 		-- print("               player y: "..tostr(players[1].y))
 		-- print("               tried move?: "..tostr(tried_to_move))
+		if debug_err then
+			print("               err: "..debug_err)
+		end
 	end
 
 end
@@ -143,14 +147,21 @@ function update_player(player)
 			if dist(player.x, player.y, boat.x, boat.y) < 8 then
 				player.x = boat.x
 				player.y = boat.y
+
+				-- set player to rowing
 				player.state = 2
+
+				-- set direction to start off east
+				player.dir = 2 
 				boat.hidden = true
 			end
 		end
+	elseif player.state == 2 then
+		rotate_player(player)
 	end
 
 
-	rotate_player(player)
+
 	move_player(player)
 
 end
@@ -358,11 +369,35 @@ function draw_player_swimming(player)
 	palt()
 end
 
+-- returns the correct rowing sprite and whether it's x-flipped
+function rowing_sprite(dir)
+	if (dir == 0) then -- north, do nothing
+		return 48, false
+	elseif (dir == 1) then -- ne
+		return 49, false
+	elseif (dir == 2) then -- east
+		return 50, false
+	elseif (dir == 3) then -- se
+		return 51, false
+	elseif (dir == 4) then -- south
+		return 52, false
+	elseif (dir == 5) then -- sw
+		return 51, true
+	elseif (dir == 6) then -- west
+		return 50, true
+	elseif (dir == 7) then
+		return 49, true
+	end
+		debug_err = "invalid dir for rowing sprite"
+	return 0, false
+end
+
 function draw_player_rowing(player)
 	-- player swim sprite is drawn on lblue bg 
 	palt(0, false)
 	palt(12, true)
-	spr(52, player.x, player.y, 1, 1, not player.facing_right)
+	sprnum, flipped = rowing_sprite(player.dir)
+	spr(sprnum, player.x, player.y, 1, 1, flipped)
 	palt()
 end
 
@@ -442,7 +477,7 @@ end
 function draw_rowboat(boat)
 	palt(0, false)
 	palt(12, true)
-	spr(48, boat.x, boat.y)
+	spr(34, boat.x, boat.y)
 	palt()
 end
 
@@ -465,20 +500,20 @@ __gfx__
 1111111155555555fafafafa0000000000000000000000000000000000000000000000000000000000000000cc2222cccc2222cc000000000000000000000000
 1111111155555555afafafaf0000000000000000000000000000000000000000000000000000000000000000cccccccccccccccc000000000000000000000000
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc0000cccccccccc000000000000000000000000000000000000000000000000
-cccccccccccccccccccccccccc5cccccccccccccccc00ccccccccccccccccccccc4445cccccccccc000000000000000000000000000000000000000000000000
-ccc55cccccc555cc5555555cc505ccccccccccccccc44ccccccccccccccccccccc0404ccccc00ccc000000000000000000000000000000000000000000000000
-cc5005cccc5005cc5000000555005ccccc5555cccc5775cccccccccccccccccccc4444cccc5445cc000000000000000000000000000000000000000000000000
-cc5005ccc50055cc55555555c55005cccc5005cccc5225cccccccccccccccccc5577775ccc5775cc000000000000000000000000000000000000000000000000
-cc5555cc55555ccc5555555ccc5555cccc5005cccc5555cccccccccccccccccc50222205cc5225cc000000000000000000000000000000000000000000000000
-cc5555ccc555ccccccccccccccc555cccc5555cccc5555cccccccccccccccccc55555555cc5555cc000000000000000000000000000000000000000000000000
+cccccccccccccccccccccccccc5cccccccccccccccccccccccccccccccc00ccccc4445cccccccccc000000000000000000000000000000000000000000000000
+ccc55cccccc555cc5555555cc505ccccccccccccccccccccccccccccccc44ccccc0404ccccc00ccc000000000000000000000000000000000000000000000000
+cc5005cccc5005cc5000000555005ccccc5555cccccccccccccccccccc5775cccc4444cccc5445cc000000000000000000000000000000000000000000000000
+cc5005ccc50055cc55555555c55005cccc5005cccccccccccccccccccc5225cc5577775ccc5775cc000000000000000000000000000000000000000000000000
+cc5555cc55555ccc5555555ccc5555cccc5005cccccccccccccccccccc5555cc50222205cc5225cc000000000000000000000000000000000000000000000000
+cc5555ccc555ccccccccccccccc555cccc5555cccccccccccccccccccc5555cc55555555cc5555cc000000000000000000000000000000000000000000000000
 cccccccccc5cccccccccccccccccccccccc55ccccccccccccccccccccccccccc5555555ccc5555cc000000000000000000000000000000000000000000000000
-cccccccccc000ccccc0000cccccccccccc000ccccccccccccc00cccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-cc000ccccc554ccccc4445cccc000ccccc444ccccccccccccc54cccccc00cccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-cc000ccccc4445cccc0404cccc444ccccc040ccccccccccccc4455cccc44cccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-cc444ccccc7775cccc4444ccc5444cccc54445cccccccccccc7705ccc544cccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-c57775ccc52225cc5577775c55777cccc57775ccccccccccc52255cc55775ccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-c52225cc55555ccc50222205c52225ccc52225cccccccccc55555cccc52205cccccccccccccccccccccccccc0000000000000000000000000000000000000000
-c55555ccc555cccc55555555cc5555ccc55555ccccccccccc555cccccc5555cccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cc000ccccc000ccccc0000cccccccccccccccccccccccccccc000ccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cc444ccccc445ccccc4445cccc000ccccc000ccccccccccccc554ccccc000ccccc5ccccccccccccccccccccc0000000000000000000000000000000000000000
+cc040ccccc4445cccc0404cccc455ccccc000ccccccccccccc4445cccc544cccc505cccccccccccccccccccc0000000000000000000000000000000000000000
+cc444ccccc7775cccc4444ccc5444cccc54445cccccccccccc7775ccc5444ccc55005ccccccccccccccccccc0000000000000000000000000000000000000000
+c57775ccc52225cc5577775c55777cccc57775ccccccccccc52225cc55777cccc55005cccccccccccccccccc0000000000000000000000000000000000000000
+c52225cc55555ccc50222205c52225ccc52225cccccccccc55555cccc52225cccc5555cccccccccccccccccc0000000000000000000000000000000000000000
+c55555ccc555cccc55555555cc5555ccc55555ccccccccccc555cccccc5555ccccc555cccccccccccccccccc0000000000000000000000000000000000000000
 c55555cccc5ccccc5555555cccc555cccc555ccccccccccccc5cccccccc555cccccccccccccccccccccccccc0000000000000000000000000000000000000000
 __gff__
 0000000000000004080108000000000010010800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
