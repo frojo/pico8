@@ -34,7 +34,7 @@ function _init()
 	-- knobs for boat feel (tm)
 	water_drag = .01
 	wind_force = water_drag * 1.5
-	row_force = water_drag * 50
+	row_force = water_drag * 5
 
 	-- precalc this for use later
 	k_invsqrt2 = 1 / sqrt(2)
@@ -163,7 +163,8 @@ function update_player_pedestrian(player)
 
 		-- pressing c let's the player hop into the boat
 		if btnp(4, pnum) then
-			if dist(player.x, player.y, boat.x, boat.y) < 8 then
+			-- todo: delete after debug/dev
+			if debug or dist(player.x, player.y, boat.x, boat.y) < 8 then
 				player.x = boat.x
 				player.y = boat.y
 
@@ -181,23 +182,37 @@ function update_player_rowing(player)
 	rotate_player(player)
 
 
-	if btn(5, pnum) then
-		stroke_leadup_length = 30
-		stroke_part2_length = 30
+	stroke_leadup_length = 30
+	stroke_force_length = 30
+	if btn(5, player.num - 1) then
 		if player.stroke_started == false then
 			player.stroke_t = 0
-			stroke_started = true
-		else
-			if stroke_t < stroke_leadup_length then
+			player.stroke_started = true
+		else -- currently stroking
+			if player.stroke_t < stroke_leadup_length then
 				-- todo: this assumes this will be called every tick
 				-- that the player is stroking. is this always true?
-				player.stroke_t += 1
+			elseif player.stroke_t < stroke_leadup_length + stroke_force_length then
+				-- apply a small continuous force
+				debug_err = "apply that force baby"
+				forcex, forcey = row_force_on_player(player)
+				forcex *= row_force
+				forcey *= row_force
+				player.dx += forcex - player.dx * water_drag
+				player.dy += forcey - player.dy * water_drag
+			else
+				debug_err = "ok we done"
 			end
-
+			player.stroke_t += 1
 		end
-		
-
+	elseif player.stroke_started then
+		player.stroke_started = false
+		player.stroke_t = 0
 	end
+
+	-- todo unify/refactor between this and the pedestrian stuff
+	player.x += player.dx
+	player.y += player.dy
 
 end
 
@@ -211,6 +226,8 @@ function update_player(player)
 	end
 
 
+	player.x += player.dx
+	player.y += player.dy
 
 	-- move_player(player)
 
