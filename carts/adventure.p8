@@ -73,17 +73,13 @@ function _draw()
 
 
 	if debug then
-		print("               cpu: "..tostr(stat(1)*100).."%")
-		-- print("               sprite idx: "..tostr(curr_sprite_idx))
-		print("               player state: "..tostr(players[1].state))
-		print("               player dir: "..tostr(players[1].dir))
-		-- print("               cellx: "..tostr(cellx))
-		-- print("               celly: "..tostr(celly))
-		-- print("               player x: "..tostr(players[1].x))
-		-- print("               player y: "..tostr(players[1].y))
-		-- print("               tried move?: "..tostr(tried_to_move))
+		print("cpu: "..tostr(stat(1)*100).."%")
+		-- print("player state: "..tostr(players[1].state))
+		-- print("player dir: "..tostr(players[1].dir))
+		print("stroke_started: "..tostr(players[1].stroke_started))
+		print("stroke_t: "..tostr(players[1].stroke_t))
 		if debug_err then
-			print("               err: "..debug_err)
+			print("err: "..debug_err)
 		end
 	end
 
@@ -110,6 +106,10 @@ function init_player(num)
 	-- north is 0, count clockwise
 	player.dir = 0
 
+	-- for rowing
+	player.stroke_started = false
+	player.stroke_t = 0
+
 	player.alt_ctl = false
 
 	return player
@@ -127,9 +127,7 @@ function dist(x1, y1, x2, y2)
 	return sqrt(dx*dx + dy*dy)
 end
 
-function update_player(player)
-	-- if swimming or standing
-	if player.state == 0 or player.state == 1 then
+function update_player_pedestrian(player)
 		if player.dx > 0 then player.facing_right = true
 		elseif player.dx < 0 then player.facing_right = false
 		end
@@ -142,36 +140,10 @@ function update_player(player)
 			player.state = 0
 		end
 
-		-- pressing x let's the player hop into the boat
-		if btnp(5, pnum) then
-			if dist(player.x, player.y, boat.x, boat.y) < 8 then
-				player.x = boat.x
-				player.y = boat.y
+		-- different indexing conventions are fun
+		local pnum = player.num - 1
 
-				-- set player to rowing
-				player.state = 2
-
-				-- set direction to start off east
-				player.dir = 2 
-				boat.hidden = true
-			end
-		end
-	elseif player.state == 2 then
-		rotate_player(player)
-	end
-
-
-
-	move_player(player)
-
-end
-
-function move_player(player)
-	-- different indexing conventions are fun
-	local pnum = player.num - 1
-
-	if player.state == 0 or player.state == 1 then
-		-- todo lol
+		-- handle input to move the player
 		player.dx = 0
 		player.dy = 0
 		if btn(0, pnum) then 
@@ -188,9 +160,63 @@ function move_player(player)
 		end
 		player.x += player.dx * walk_speed
 		player.y += player.dy * walk_speed
-		return
+
+		-- pressing c let's the player hop into the boat
+		if btnp(6, pnum) then
+			if dist(player.x, player.y, boat.x, boat.y) < 8 then
+				player.x = boat.x
+				player.y = boat.y
+
+				-- set player to rowing
+				player.state = 2
+
+				-- set direction to start off east
+				player.dir = 2 
+				boat.hidden = true
+			end
+		end
+end
+
+function update_player_rowing(player)
+	rotate_player(player)
+
+
+	if btn(5, pnum) then
+		stroke_leadup_length = 30
+		stroke_part2_length = 30
+		if player.stroke_started == false then
+			player.stroke_t = 0
+			stroke_started = true
+		else
+			if stroke_t < stroke_leadup_length then
+				-- todo: this assumes this will be called every tick
+				-- that the player is stroking. is this always true?
+				player.stroke_t += 1
+			end
+
+		end
+		
+
 	end
 
+end
+
+function update_player(player)
+	-- if swimming or standing
+	if player.state == 0 or player.state == 1 then
+		update_player_pedestrian(player)
+	elseif player.state == 2 then
+		update_player_rowing(player)
+		-- todo: rowing motion
+	end
+
+
+
+	-- move_player(player)
+
+end
+
+function move_player_sailing(player)
 	-- todo clean this shit up
 	-- add wind force
 	local forcex, forcey
