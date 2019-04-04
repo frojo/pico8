@@ -468,30 +468,6 @@ function oar_catch_sprite(dir)
 	return 0, false
 end
 
--- returns oar in-water sprite depending on the direction the rowboat is facing
--- and whether it's flipped
--- function oar_in_water_sprite(dir)
--- 	if (dir == 0) then -- north, do nothing
--- 		return 48, false
--- 	elseif (dir == 1) then -- ne
--- 		return 49, false
--- 	elseif (dir == 2) then -- east
--- 		return 54, false
--- 	elseif (dir == 3) then -- se
--- 		return 51, false
--- 	elseif (dir == 4) then -- south
--- 		return 52, false
--- 	elseif (dir == 5) then -- sw
--- 		return 51, true
--- 	elseif (dir == 6) then -- west
--- 		return 50, true
--- 	elseif (dir == 7) then
--- 		return 49, true
--- 	end
--- 		debug_err = "invalid dir for rowing sprite"
--- 	return 0, false
--- end
-
 -- returns oar catch sprite depending on the direction the rowboat is facing
 -- and whether it's flipped
 function oar_catch_sprite(dir)
@@ -519,9 +495,9 @@ end
 function draw_oar_catch(player)
 	local dir = player.dir
 	if (dir == 0) then -- north
-		local loarx = player.x - 5
+		local loarx = player.x - 4
 		local loary = player.y - 2
-		local roarx = player.x + 4
+		local roarx = player.x + 3
 		local roary = player.y - 2
 		local sprnum = 53
 		local flippedx = false
@@ -534,13 +510,13 @@ function draw_oar_catch(player)
 		local sprnum = 53
 		spr(sprnum, oarx, oary)
 	elseif (dir == 4) then -- south
-		local loarx = player.x - 5
-		local loary = player.y - 2
-		local roarx = player.x + 4
-		local roary = player.y - 2
+		local loarx = player.x - 4
+		local loary = player.y + 3
+		local roarx = player.x + 3
+		local roary = player.y + 3
 		local sprnum = 53
 		local flippedx = false
-		local flippedy = true
+		local flippedy = false
 		spr(sprnum, loarx, loary, 1, 1, not flippedx, flippedy)
 		spr(sprnum, roarx, roary, 1, 1, flipped, flippedy)
 	end
@@ -563,6 +539,15 @@ function draw_oar_water(player)
 		local oary = player.y + 4
 		local sprnum = 54
 		spr(sprnum, oarx, oary)
+	elseif (dir == 4) then -- south
+		local loarx = player.x - 3
+		local loary = player.y + 4
+		local roarx = player.x + 3
+		local roary = player.y + 4
+		local sprnum = 54
+		local flipped = false
+		spr(sprnum, loarx, loary, 1, 1, not flipped)
+		spr(sprnum, roarx, roary, 1, 1, flipped)
 	end
 
 end
@@ -570,9 +555,9 @@ end
 function draw_oar_release(player)
 	local dir = player.dir
 	if (dir == 0) then -- north
-		local loarx = player.x - 5
+		local loarx = player.x - 4
 		local loary = player.y + 4
-		local roarx = player.x + 4
+		local roarx = player.x + 3
 		local roary = player.y + 4
 		local sprnum = 53
 		local flipped = false
@@ -584,6 +569,16 @@ function draw_oar_release(player)
 		local sprnum = 53
 		local flipped = true
 		spr(sprnum, oarx, oary, 1, 1, flipped)
+	elseif (dir == 4) then -- south
+		local loarx = player.x - 5
+		local loary = player.y - 3
+		local roarx = player.x + 4
+		local roary = player.y - 3
+		local sprnum = 53
+		local flippedx = false
+		local flippedy = true
+		spr(sprnum, loarx, loary, 1, 1, not flippedx, flippedy)
+		spr(sprnum, roarx, roary, 1, 1, flippedx, flippedy)
 	end
 
 end
