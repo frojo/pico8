@@ -39,6 +39,11 @@ function _init()
 	-- timings for rowing
 	stroke_catch_t = 12
 	stroke_pull_t = 30
+	-- this is an array where each element is info for animating the
+	-- oars when rowing. ex. sprite index positional draw offset.
+	-- each element is info for one possible rowing direction
+	oar_anim = init_oar_anim()
+
 
 	-- precalc this for use later
 	k_invsqrt2 = 1 / sqrt(2)
@@ -82,6 +87,7 @@ function _draw()
 		-- print("player dir: "..tostr(players[1].dir))
 		print("stroke_started: "..tostr(players[1].stroke_started))
 		print("stroke_t: "..tostr(players[1].stroke_t))
+		-- print("oar_anim test:"..oar_anim[1][1])
 		if debug_err then
 			print("err: "..debug_err)
 		end
@@ -492,6 +498,64 @@ function oar_catch_sprite(dir)
 	return 0, false
 end
 
+-- info for animating oars when rowing
+function init_oar_anim()
+	local oar_anim = {}
+	oar_anim.north = init_oar_dir_spr_params(53,
+			  -4, -3, true, true, 3, -2, false, true,
+			  -4, -2, false, false, 3, 4, false, false,
+			  -4, 4, true, false, 3, 4, false, false)
+
+	return oar_anim
+end
+
+-- dir: {catch, water, release}
+function init_oar_dir_spr_params(sprnum, 
+				   cloarx, cloary, clflippedx, clflippedy,
+				   croarx, croary, crflippedx, crflippedy,
+				   wloarx, wloary, wlflippedx, wlflippedy,
+				   wroarx, wroary, wrflippedx, wrflippedy,
+				   rloarx, rloary, rlflippedx, rlflippedy,
+				   rroarx, rroary, rrflippedx, rrflippedy)
+	local dir = {}
+
+	dir.catch = init_oar_anim_phase(sprnum,
+	  		   cloarx, cloary, clflippedx, clflippedy,
+	  		   croarx, croary, crflippedx, crflippedy)
+	dir.water = init_oar_anim_phase(sprnum,
+	  		   wloarx, wloary, wlflippedx, wlflippedy,
+	  		   wroarx, wroary, wrflippedx, wrflippedy)
+	dir.release = init_oar_anim_phase(sprnum,
+				   rloarx, rloary, rlflippedx, rlflippedy,
+				   rroarx, rroary, rrflippedx, rrflippedy)
+	return dir
+end
+
+-- phase: {sprnum, loar, roar}
+-- loar: {x, y, flippedx, flippedy}
+function init_oar_anim_phase(sprnum, loarx, loary, lflippedx, lflippedy,
+				     roarx, roary, rflippedx, rflippedy)
+	local phase = {}
+	phase.sprnum = sprnum
+
+	-- sprite offsets and flippings
+	local loar = {}
+	loar.x = loarx
+	loar.y = loary
+	loar.flippedx = lflippedx
+	loar.flippedy = lflippedy
+
+	local roar = {}
+	roar.x = roarx
+	roar.y = roary
+	roar.flippedx = rflippedx
+	roar.flippedy = rflippedy
+	
+	phase.loar = loar
+	phase.roar = roar
+	return phase
+end
+
 function draw_oar_catch(player)
 	local dir = player.dir
 	if (dir == 0) then -- north
@@ -544,7 +608,7 @@ function draw_oar_water(player)
 		local loary = player.y + 4
 		local roarx = player.x + 3
 		local roary = player.y + 4
-		local sprnum = 54
+		localsprnum = 54
 		local flipped = false
 		spr(sprnum, loarx, loary, 1, 1, not flipped)
 		spr(sprnum, roarx, roary, 1, 1, flipped)
@@ -583,6 +647,28 @@ function draw_oar_release(player)
 
 end
 
+function draw_oar_catch_new(dir)
+	if (dir == 0) then -- north, do nothing
+		return 53, true
+	elseif (dir == 1) then -- ne
+		return 53, true
+	elseif (dir == 2) then -- east
+		return 53, true
+	elseif (dir == 3) then -- se
+		return 53, true
+	elseif (dir == 4) then -- south
+		return 53, true
+	elseif (dir == 5) then -- sw
+		return 53, true
+	elseif (dir == 6) then -- west
+		return 53, true
+	elseif (dir == 7) then
+		return 53, true
+	end
+		debug_err = "invalid dir for rowing sprite"
+	return 0, false
+end
+
 
 function draw_player_rowing(player)
 	-- player swim sprite is drawn on lblue bg 
@@ -598,8 +684,20 @@ function draw_player_rowing(player)
 		loary = player.y + 5
 		local flipped = false
 		if player.stroke_t < stroke_catch_t then
+			if debug and player.dir == 0 then
+				debug_err = "king of da north!"
+				-- draw_oar_catch_new(player.dir)
+				local l = oar_anim.north.catch.loar
+				local r = oar_anim.north.catch.roar
+				spr(oar_anim.north.catch.sprnum, 
+					player.x + l.x, player.y + l.y, 1, 1,
+					l.flippedx, l.flippedy)
+				spr(oar_anim.north.catch.sprnum, 
+					player.x + r.x, player.y + r.y, 1, 1,
+					r.flippedx, r.flippedy)
+			else draw_oar_catch(player)
+			end
 			-- sprnum, flipped = oar_catch_sprite(player.dir)
-			draw_oar_catch(player)
 		elseif player.stroke_t < stroke_catch_t + stroke_pull_t then
 			-- sprnum, flipped = oar_in_water_sprite(player.dir)
 			draw_oar_water(player)
