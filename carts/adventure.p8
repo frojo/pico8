@@ -196,12 +196,10 @@ function update_player_rowing(player)
 				-- that the player is stroking. is this always true?
 			elseif player.stroke_t < stroke_catch_t + stroke_pull_t then
 				-- apply a small continuous force
-				debug_err = "apply that force baby"
 				forcex, forcey = row_force_on_player(player)
 				player.dx += forcex * row_force
 				player.dy += forcey * row_force
 			else
-				debug_err = "ok we done"
 			end
 			player.stroke_t += 1
 		end
@@ -414,6 +412,8 @@ function draw_player_swimming(player)
 	palt()
 end
 
+-- todo: for this and oar sprites and other things, probably a way to 
+-- encapsulate it in a class or config type thing
 -- returns the correct rowing sprite and whether it's x-flipped
 function rowing_sprite(dir)
 	if (dir == 0) then -- north, do nothing
@@ -437,6 +437,99 @@ function rowing_sprite(dir)
 	return 0, false
 end
 
+-- returns oar catch sprite depending on the direction the rowboat is facing
+-- and whether it's flipped
+function oar_catch_sprite(dir)
+	if (dir == 0) then -- north, do nothing
+		return 48, false
+	elseif (dir == 1) then -- ne
+		return 49, false
+	elseif (dir == 2) then -- east
+		return 53, false
+	elseif (dir == 3) then -- se
+		return 51, false
+	elseif (dir == 4) then -- south
+		return 52, false
+	elseif (dir == 5) then -- sw
+		return 51, true
+	elseif (dir == 6) then -- west
+		return 50, true
+	elseif (dir == 7) then
+		return 49, true
+	end
+		debug_err = "invalid dir for rowing sprite"
+	return 0, false
+end
+
+-- returns oar in-water sprite depending on the direction the rowboat is facing
+-- and whether it's flipped
+-- function oar_in_water_sprite(dir)
+-- 	if (dir == 0) then -- north, do nothing
+-- 		return 48, false
+-- 	elseif (dir == 1) then -- ne
+-- 		return 49, false
+-- 	elseif (dir == 2) then -- east
+-- 		return 54, false
+-- 	elseif (dir == 3) then -- se
+-- 		return 51, false
+-- 	elseif (dir == 4) then -- south
+-- 		return 52, false
+-- 	elseif (dir == 5) then -- sw
+-- 		return 51, true
+-- 	elseif (dir == 6) then -- west
+-- 		return 50, true
+-- 	elseif (dir == 7) then
+-- 		return 49, true
+-- 	end
+-- 		debug_err = "invalid dir for rowing sprite"
+-- 	return 0, false
+-- end
+
+-- returns oar catch sprite depending on the direction the rowboat is facing
+-- and whether it's flipped
+function oar_catch_sprite(dir)
+	if (dir == 0) then -- north, do nothing
+		return 53, true
+	elseif (dir == 1) then -- ne
+		return 53, true
+	elseif (dir == 2) then -- east
+		return 53, true
+	elseif (dir == 3) then -- se
+		return 53, true
+	elseif (dir == 4) then -- south
+		return 53, true
+	elseif (dir == 5) then -- sw
+		return 53, true
+	elseif (dir == 6) then -- west
+		return 53, true
+	elseif (dir == 7) then
+		return 53, true
+	end
+		debug_err = "invalid dir for rowing sprite"
+	return 0, false
+end
+
+function draw_oar_catch(player)
+	local dir = player.dir
+	if (dir == 0) then -- north, on
+		local loarx = player.x - 4
+		local loary = player.y
+		local roarx = player.x + 4
+		local roary = player.y
+		local sprnum = 53
+		local flipped = false
+		spr(sprnum, loarx, loary, 1, 1, flipped)
+		spr(sprnum, roarx, roary, 1, 1, not flipped)
+	elseif (dir == 2) then -- east
+		local oarx = player.x
+		local oary = player.y
+		local sprnum = 53
+		local flipped = false
+		spr(sprnum, oarx, oary, 1, 1, flipped)
+	end
+
+end
+
 function draw_player_rowing(player)
 	-- player swim sprite is drawn on lblue bg 
 	palt(0, false)
@@ -447,17 +540,23 @@ function draw_player_rowing(player)
 	if player.stroke_started then
 		-- first try just when going eastward
 		local sprnum
-		if player.stroke_t < stroke_catch_t then
-			sprnum = 53
-		elseif player.stroke_t < stroke_catch_t + stroke_pull_t then
-			sprnum = 54
-		else
-			sprnum = 55
-		end
 		loarx = player.x + 2
 		loary = player.y + 5
+		local flipped = false
+		if player.stroke_t < stroke_catch_t then
+			-- sprnum, flipped = oar_catch_sprite(player.dir)
+			draw_oar_catch(player)
+		elseif player.stroke_t < stroke_catch_t + stroke_pull_t then
+			-- sprnum, flipped = oar_in_water_sprite(player.dir)
+			sprnum = 54
+			spr(sprnum, loarx, loary, 1, 1, flipped)
+		else
+			sprnum, flipped = oar_catch_sprite(player.dir)
+			flipped = not flipped
+			spr(sprnum, loarx, loary, 1, 1, flipped)
+		end
 
-		spr(sprnum, loarx, loary)
+
 
 		roarx = player.x
 		roary = player.y - 8
@@ -576,12 +675,12 @@ cc5005ccc50055cc55555555c55005cccc5005cccccccccccccccccccccccccccccccccccccccccc
 cc5555cc55555ccc5555555ccc5555cccc5005cccccccccccccccccccccccccccccccccccccccccc000000000000000000000000000000000000000000000000
 cc5555ccc555ccccccccccccccc555cccc5555cccccccccccccccccccccccccccccccccccccccccc000000000000000000000000000000000000000000000000
 cccccccccc5cccccccccccccccccccccccc55ccccccccccccccccccccccccccccccccccccccccccc000000000000000000000000000000000000000000000000
-cc000ccccc000ccccc0000cccccccccccccccccccc44ccccccc4cccccccc44cccccccccccccccccccccccccc0000000000000000000000000000000000000000
-cc444ccccc445ccccc4445cccc000ccccc000cccccc44cccccc4ccccccc44ccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-cc040ccccc4445cccc0404cccc455ccccc000ccccccc444ccc747cccc444cccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-cc444ccccc7775cccc4444ccc5444cccc54445ccccccc444cc777ccc444ccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-c57775ccc52225cc5577775c55777cccc57775ccccccc444cccccccc444ccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
-c52225cc55555ccc50222205c52225ccc52225cccccccc4cccccccccc4cccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cc000ccccc000ccccc0000ccccccccccccccccccc44cccccccc4cccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cc444ccccc445ccccc4445cccc000ccccc000ccccc44ccccccc4cccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cc040ccccc4445cccc0404cccc455ccccc000cccccc444cccc747ccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+cc444ccccc7775cccc4444ccc5444cccc54445cccccc444ccc777ccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+c57775ccc52225cc5577775c55777cccc57775cccccc444ccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
+c52225cc55555ccc50222205c52225ccc52225ccccccc4cccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
 c55555ccc555cccc55555555cc5555ccc55555cccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
 c55555cccc5ccccc5555555cccc555cccc555ccccccccccccccccccccccccccccccccccccccccccccccccccc0000000000000000000000000000000000000000
 __gff__
