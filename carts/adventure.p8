@@ -44,6 +44,8 @@ function _init()
 	-- each element is info for one possible rowing direction
 	oar_anim = init_oar_anim()
 
+	-- wake particles to be animated
+	wake = {}
 
 	-- precalc this for use later
 	k_invsqrt2 = 1 / sqrt(2)
@@ -73,6 +75,8 @@ function _draw()
 	-- draw screen
 	map(screen*16, screen*16, 0, 0, 16, 16)
 
+	draw_wake()
+
 	-- draw players
 	for player in all(players) do
 		draw_player(player)
@@ -85,8 +89,8 @@ function _draw()
 		print("cpu: "..tostr(stat(1)*100).."%")
 		-- print("player state: "..tostr(players[1].state))
 		-- print("player dir: "..tostr(players[1].dir))
-		print("stroke_started: "..tostr(players[1].stroke_started))
-		print("stroke_t: "..tostr(players[1].stroke_t))
+		-- print("stroke_started: "..tostr(players[1].stroke_started))
+		-- print("stroke_t: "..tostr(players[1].stroke_t))
 		-- print("oar_anim test:"..oar_anim[1][1])
 		if debug_err then
 			print("err: "..debug_err)
@@ -106,7 +110,7 @@ function init_player(num)
 	if (num == 1) player.color = 4 -- brown
 	if (num == 2) player.color = 5 -- dark grey
 
-	player.x = 48
+	player.x = 24
 	player.y = 48
 	player.h = 8
 	player.w = 8
@@ -115,7 +119,7 @@ function init_player(num)
 	player.facing_right = true
 
 	-- north is 0, count clockwise
-	player.dir = 0
+	player.dir = 2
 
 	-- for rowing
 	player.stroke_started = false
@@ -188,10 +192,28 @@ function update_player_pedestrian(player)
 		end
 end
 
+-- creates a wake particle
+function init_wake(x, y)
+	local p = {}
+	p.x = x
+	p.y = y
+
+	return p
+end
+
+function emit_wake(player)
+	debug_err = "emitting particle!"
+	add(wake, init_wake(player.x, player.y))
+end
+
+function draw_wake()
+	for p in all(wake) do
+		pset(p.x, p.y, 7)
+	end
+end
+
 function update_player_rowing(player)
 	rotate_player(player)
-
-
 
 	if btn(5, player.num - 1) then
 		if player.stroke_started == false then
@@ -215,12 +237,15 @@ function update_player_rowing(player)
 		player.stroke_t = 0
 	end
 
+	if player.dx != 0 or player.dy != 0 then
+		emit_wake(player)
+	end
+
 	-- todo: unify/refactor between this and the pedestrian stuff
 	player.dx -= player.dx * water_drag
 	player.dy -= player.dy * water_drag
 	player.x += player.dx
 	player.y += player.dy
-
 end
 
 function update_player(player)
