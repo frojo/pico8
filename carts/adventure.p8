@@ -101,8 +101,6 @@ function init_player(num)
 
 	-- player states: 0 = pedestrian, 1 = swimming, 2 = rowing, 3 = sailing
 	player.state = 0
-
-	-- todo: delete when done developing rowing anim
 	if (debug) player.state = 2
 	
 	if (num == 1) player.color = 4 -- brown
@@ -176,7 +174,6 @@ function update_player_pedestrian(player)
 
 		-- pressing c let's the player hop into the boat
 		if btnp(4, pnum) then
-			-- todo: delete after debug/dev
 			if dist(player.x, player.y, boat.x, boat.y) < 8 then
 				player.x = boat.x
 				player.y = boat.y
@@ -218,10 +215,7 @@ function update_player_rowing(player)
 		player.stroke_t = 0
 	end
 
-	-- todo: delete when done developing rowing anim move
-	-- if (debug) return
-
-	-- todo unify/refactor between this and the pedestrian stuff
+	-- todo: unify/refactor between this and the pedestrian stuff
 	player.dx -= player.dx * water_drag
 	player.dy -= player.dy * water_drag
 	player.x += player.dx
@@ -385,8 +379,13 @@ function rotate_player(player)
 		elseif (btn(3, pnum)) then player.dir = 4
 		end
 	else
-		if (btnp(0, pnum)) player.dir = (player.dir - 1) % 8
-		if (btnp(1, pnum)) player.dir = (player.dir + 1) % 8
+		if (btnp(0, pnum)) player.dir = (player.dir - 2) % 8
+		if (btnp(1, pnum)) player.dir = (player.dir + 2) % 8
+
+		-- uncomment if/when i feel like diagonal directions are 
+		-- worth animating etc.
+		-- if (btnp(0, pnum)) player.dir = (player.dir - 2) % 8
+		-- if (btnp(1, pnum)) player.dir = (player.dir + 1) % 8
 	end
 end
 
@@ -445,54 +444,6 @@ function rowing_sprite(dir)
 		return 50, true
 	elseif (dir == 7) then
 		return 49, true
-	end
-		debug_err = "invalid dir for rowing sprite"
-	return 0, false
-end
-
--- returns oar catch sprite depending on the direction the rowboat is facing
--- and whether it's flipped
-function oar_catch_sprite(dir)
-	if (dir == 0) then -- north, do nothing
-		return 48, false
-	elseif (dir == 1) then -- ne
-		return 49, false
-	elseif (dir == 2) then -- east
-		return 53, false
-	elseif (dir == 3) then -- se
-		return 51, false
-	elseif (dir == 4) then -- south
-		return 52, false
-	elseif (dir == 5) then -- sw
-		return 51, true
-	elseif (dir == 6) then -- west
-		return 50, true
-	elseif (dir == 7) then
-		return 49, true
-	end
-		debug_err = "invalid dir for rowing sprite"
-	return 0, false
-end
-
--- returns oar catch sprite depending on the direction the rowboat is facing
--- and whether it's flipped
-function oar_catch_sprite(dir)
-	if (dir == 0) then -- north, do nothing
-		return 53, true
-	elseif (dir == 1) then -- ne
-		return 53, true
-	elseif (dir == 2) then -- east
-		return 53, true
-	elseif (dir == 3) then -- se
-		return 53, true
-	elseif (dir == 4) then -- south
-		return 53, true
-	elseif (dir == 5) then -- sw
-		return 53, true
-	elseif (dir == 6) then -- west
-		return 53, true
-	elseif (dir == 7) then
-		return 53, true
 	end
 		debug_err = "invalid dir for rowing sprite"
 	return 0, false
@@ -720,8 +671,10 @@ function init_rowboat(x, y)
 	boat = {}
 	boat.x = x
 	boat.y = y
-	-- for when player is in boat so we don't want to draw it
 	boat.hidden = false
+
+	-- for when player is in boat so we don't want to draw it
+	if (debug) boat.hidden = true
 	return boat
 end
 
