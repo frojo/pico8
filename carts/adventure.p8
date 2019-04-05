@@ -46,6 +46,7 @@ function _init()
 
 	-- wake particles to be animated
 	wake = {}
+	wake_v = 1
 
 	-- precalc this for use later
 	k_invsqrt2 = 1 / sqrt(2)
@@ -65,6 +66,8 @@ function _update()
 	for player in all(players) do
 		update_player(player)
 	end
+	
+	update_wake()
 
 	t += 1
 end
@@ -193,17 +196,53 @@ function update_player_pedestrian(player)
 end
 
 -- creates a wake particle
-function init_wake(x, y)
+function init_wake(x, y, dir, v)
 	local p = {}
 	p.x = x
 	p.y = y
+
+	-- follows same conventions as boat dirs
+	p.dir = dir
+	p.v = v
+
+	p.t = 0
 
 	return p
 end
 
 function emit_wake(player)
-	debug_err = "emitting particle!"
-	add(wake, init_wake(player.x, player.y))
+	-- do east first
+	-- todo do the other angles
+
+	local x1 = player.x + 6
+	local y1 = player.y + 5
+	local dir1 = 0
+	local x2 = x1
+	local y2 = y1 + 2
+	local dir2 = 4
+	local v = player.dx
+
+	-- add(wake, init_wake(player.x, player.y))
+	add(wake, init_wake(x1, y1, dir1, v))
+	add(wake, init_wake(x2, y2, dir2, v))
+end
+
+-- update all wake particles
+function update_wake()
+	for p in all(wake) do
+
+		-- make it move slowly "outwards"
+		dx, dy = card_to_xy(p.dir)
+		p.x += dx * p.v * wake_v
+		p.y += dy * p.v * wake_v
+
+		if (p.t > 30) del(wake, p)
+
+		p.t += 1
+	end
+
+	
+
 end
 
 function draw_wake()
@@ -225,7 +264,7 @@ function update_player_rowing(player)
 				-- that the player is stroking. is this always true?
 			elseif player.stroke_t < stroke_catch_t + stroke_pull_t then
 				-- apply a small continuous force
-				forcex, forcey = row_force_on_player(player)
+				forcex, forcey = card_to_xy(player.dir)
 				player.dx += forcex * row_force
 				player.dy += forcey * row_force
 			else
@@ -274,7 +313,7 @@ function move_player_sailing(player)
 		forcex *= wind_force
 		forcey *= wind_force
 	else
-		forcex, forcey = row_force_on_player(player)
+		forcex, forcey = card_to_xy(player.dir)
 		forcex *= row_force
 		forcey *= row_force
 		
@@ -331,28 +370,30 @@ end
 -- todo: use metatable to implement vectors and use those for velocity stuff
 -- so that we don't have to duplicate code everywhere?
 
-function row_force_on_player(player)
+-- translates a cardinal direction to x/y movement
+-- returns a "normalized vector" as an x,y pair
+function card_to_xy(dir)
 	local dx = 0;
 	local dy = 0;
 	if (btnp(5)) then
-		if (player.dir == 0) then -- north, do nothing
+		if (dir == 0) then -- north, do nothing
 			dy = -1
-		elseif (player.dir == 1) then -- ne
+		elseif (dir == 1) then -- ne
 			dx = k_invsqrt2
 			dy = -k_invsqrt2
-		elseif (player.dir == 2) then -- east
+		elseif (dir == 2) then -- east
 			dx = 1
-		elseif (player.dir == 3) then -- se
+		elseif (dir == 3) then -- se
 			dx = k_invsqrt2
 			dy = k_invsqrt2
-		elseif (player.dir == 4) then -- south
+		elseif (dir == 4) then -- south
 			dy = 1
-		elseif (player.dir == 5) then -- sw
+		elseif (dir == 5) then -- sw
 			dx = -k_invsqrt2
 			dy = k_invsqrt2
-		elseif (player.dir == 6) then -- west
+		elseif (dir == 6) then -- west
 			dx = -1
-		else -- (player.dir == 7) -- nw
+		else -- (dir == 7) -- nw
 			dx = -k_invsqrt2
 			dy = -k_invsqrt2
 		end
