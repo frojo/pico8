@@ -595,97 +595,6 @@ function init_oar_anim_phase(sprnum, loarx, loary, lflippedx, lflippedy,
 	return phase
 end
 
-function draw_oar_catch(player)
-	local dir = player.dir
-	if (dir == 0) then -- north
-		local loarx = player.x - 4
-		local loary = player.y - 2
-		local roarx = player.x + 3
-		local roary = player.y - 2
-		local sprnum = 53
-		local flippedx = false
-		local flippedy = true
-		spr(sprnum, loarx, loary, 1, 1, not flippedx, flippedy)
-		spr(sprnum, roarx, roary, 1, 1, flipped, flippedy)
-	elseif (dir == 2) then -- east
-		local oarx = player.x + 1
-		local oary = player.y + 4
-		local sprnum = 53
-		spr(sprnum, oarx, oary)
-	elseif (dir == 4) then -- south
-		local loarx = player.x - 4
-		local loary = player.y + 3
-		local roarx = player.x + 3
-		local roary = player.y + 3
-		local sprnum = 53
-		local flippedx = false
-		local flippedy = false
-		spr(sprnum, loarx, loary, 1, 1, not flippedx, flippedy)
-		spr(sprnum, roarx, roary, 1, 1, flipped, flippedy)
-	end
-
-end
-
-function draw_oar_water(player)
-	local dir = player.dir
-	if (dir == 0) then -- north
-		local loarx = player.x - 4
-		local loary = player.y + 4
-		local roarx = player.x + 3
-		local roary = player.y + 4
-		local sprnum = 54
-		local flipped = false
-		spr(sprnum, loarx, loary, 1, 1, not flipped)
-		spr(sprnum, roarx, roary, 1, 1, flipped)
-	elseif (dir == 2) then -- east
-		local oarx = player.x 
-		local oary = player.y + 4
-		local sprnum = 54
-		spr(sprnum, oarx, oary)
-	elseif (dir == 4) then -- south
-		local loarx = player.x - 3
-		local loary = player.y + 4
-		local roarx = player.x + 3
-		local roary = player.y + 4
-		local sprnum = 54
-		local flipped = false
-		spr(sprnum, loarx, loary, 1, 1, not flipped)
-		spr(sprnum, roarx, roary, 1, 1, flipped)
-	end
-
-end
-
-function draw_oar_release(player)
-	local dir = player.dir
-	if (dir == 0) then -- north
-		local loarx = player.x - 4
-		local loary = player.y + 4
-		local roarx = player.x + 3
-		local roary = player.y + 4
-		local sprnum = 53
-		local flipped = false
-		spr(sprnum, loarx, loary, 1, 1, not flipped)
-		spr(sprnum, roarx, roary, 1, 1, flipped)
-	elseif (dir == 2) then -- east
-		local oarx = player.x - 2
-		local oary = player.y + 4
-		local sprnum = 53
-		local flipped = true
-		spr(sprnum, oarx, oary, 1, 1, flipped)
-	elseif (dir == 4) then -- south
-		local loarx = player.x - 5
-		local loary = player.y - 3
-		local roarx = player.x + 4
-		local roary = player.y - 3
-		local sprnum = 53
-		local flippedx = false
-		local flippedy = true
-		spr(sprnum, loarx, loary, 1, 1, not flippedx, flippedy)
-		spr(sprnum, roarx, roary, 1, 1, flippedx, flippedy)
-	end
-
-end
-
 function oar_anim_params(dir)
 	if (dir == 0) then
 		return oar_anim.north
@@ -708,7 +617,6 @@ function oar_anim_params(dir)
 	return 0, false
 end
 
-
 function draw_player_rowing(player)
 	-- player swim sprite is drawn on lblue bg 
 	palt(0, false)
@@ -717,7 +625,6 @@ function draw_player_rowing(player)
 	spr(sprnum, player.x, player.y, 1, 1, flipped)
 
 	if player.stroke_started then
-
 		local s = oar_anim_params(player.dir)
 		-- will hold the oar animation parameters for 
 		-- this phase of rowing
