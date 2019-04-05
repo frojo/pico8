@@ -518,9 +518,31 @@ function init_oar_anim()
 	-- east and west have the same params for left and right oars
 	-- because they only animate one oar when rowing
 	oar_anim.east = init_oar_dir_spr_params(
-			  1, 4, false, false, 1, 4, false, false,
+			  0, 4, false, false, 0, 4, false, false,
 			  0, 4, false, false, 0, 4, false, false,
 			  -2, 4, true, false, -2, 4, true, false)
+	oar_anim.west= init_oar_dir_spr_params(
+			  0, 4, true, false, 0, 4, true, false,
+			  1, 4, false, false, 1, 4, false, false,
+			  2, 4, false, false, 2, 4, false, false)
+
+
+	oar_anim.ne = init_oar_dir_spr_params(
+			  1, 4, true, false, 100, 100, false, false,
+			  0, 4, false, false, 100, 100, false, false,
+			  -2, 4, false, false, 100, 100, true, false)
+	oar_anim.nw = init_oar_dir_spr_params(
+			  1, 4, true, false, 100, 100, false, false,
+			  0, 4, false, false, 100, 100, false, false,
+			  -2, 4, false, false, 100, 100, true, false)
+	oar_anim.sw = init_oar_dir_spr_params(
+			  1, 4, true, false, 100, 100, false, false,
+			  0, 4, false, false, 100, 100, false, false,
+			  -2, 4, false, false, 100, 100, true, false)
+	oar_anim.se = init_oar_dir_spr_params(
+			  1, 4, true, false, 100, 100, false, false,
+			  0, 4, false, false, 100, 100, false, false,
+			  -2, 4, false, false, 100, 100, true, false)
 
 
 	return oar_anim
