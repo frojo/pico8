@@ -219,7 +219,7 @@ function update_player_rowing(player)
 	end
 
 	-- todo: delete when done developing rowing anim move
-	if (debug) return
+	-- if (debug) return
 
 	-- todo unify/refactor between this and the pedestrian stuff
 	player.dx -= player.dx * water_drag
@@ -514,6 +514,14 @@ function init_oar_anim()
 			  -4, 3, true, false, 3, 3, false, false,
 			  -4, 4, true, false, 3, 4, false, false,
 			  -5, -3, true, true, 4, -3, false, true)
+
+	-- east and west have the same params for left and right oars
+	-- because they only animate one oar when rowing
+	oar_anim.east = init_oar_dir_spr_params(
+			  1, 4, false, false, 1, 4, false, false,
+			  0, 4, false, false, 0, 4, false, false,
+			  -2, 4, true, false, -2, 4, true, false)
+
 
 	return oar_anim
 end
